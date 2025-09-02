@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>DNA Double Helix Animation</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            background: #0f172a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        #scene {
+            position: relative;
+            width: 400px;
+            height: 600px;
+        }
+
+        .base {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+        }
+
+        .pair {
+            position: absolute;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.5);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="scene"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script>
+        const scene = document.querySelector('#scene');
+        const numBases = 40;
+        const helix = [];
+
+        // Colors for base pairs (A-T, C-G)
+        const colors = ['#f87171', '#60a5fa', '#34d399', '#fbbf24'];
+
+        for (let i = 0; i < numBases; i++) {
+            // left strand base
+            const left = document.createElement('div');
+            left.className = 'base';
+            left.style.background = colors[i % 4];
+            scene.appendChild(left);
+
+            // right strand base
+            const right = document.createElement('div');
+            right.className = 'base';
+            right.style.background = colors[(i + 2) % 4];
+            scene.appendChild(right);
+
+            // connecting pair
+            const pair = document.createElement('div');
+            pair.className = 'pair';
+            scene.appendChild(pair);
+
+            helix.push({ left, right, pair, index: i });
+        }
+
+        const width = 200;   // max separation of strands
+        const height = 600;  // helix height
+        const amplitude = 80; // radius of twist
+        const frequency = 0.3; // twist frequency
+
+        anime({
+            targets: helix,
+            loop: true,
+            duration: 8000,
+            easing: 'linear',
+            update: anim => {
+                const phase = anim.progress / 100 * Math.PI * 2; // rotation phase
+                helix.forEach(({ left, right, pair, index }) => {
+                    const y = (index / numBases) * height;
+                    const angle = frequency * y + phase;
+                    const offset = Math.sin(angle) * amplitude;
+
+                    // X positions of strands
+                    const xLeft = width / 2 - offset;
+                    const xRight = width / 2 + offset;
+
+                    // Position bases
+                    left.style.transform = `translate(${xLeft}px, ${y}px)`;
+                    right.style.transform = `translate(${xRight}px, ${y}px)`;
+
+                    // Connect with pair line
+                    const midX = (xLeft + xRight) / 2;
+                    pair.style.width = Math.abs(xRight - xLeft) + 'px';
+                    pair.style.transform = `translate(${midX - pair.offsetWidth / 2}px, ${y + 7}px)`;
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

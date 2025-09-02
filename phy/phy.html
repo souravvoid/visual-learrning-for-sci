@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Newton's Third Law Lab Demo</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            background: #0f172a;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #f8fafc;
+            font-family: sans-serif;
+        }
+
+        #lab {
+            position: relative;
+            width: 80%;
+            height: 220px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        .ball {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            color: white;
+        }
+
+        #ball1 {
+            background: #f87171;
+            left: 0;
+        }
+
+        #ball2 {
+            background: #60a5fa;
+            right: 0;
+        }
+
+        .arrow {
+            position: absolute;
+            top: 40%;
+            width: 80px;
+            height: 10px;
+            background: #22d3ee;
+            border-radius: 5px;
+            opacity: 0;
+        }
+
+        .arrow::after {
+            content: "";
+            position: absolute;
+            right: 0;
+            top: -8px;
+            border-left: 15px solid #22d3ee;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+        }
+
+        .arrow.left {
+            transform: rotate(180deg);
+        }
+
+        h2 {
+            margin: 10px;
+        }
+
+        #dataPanel {
+            margin-top: 15px;
+            width: 80%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 14px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        td,
+        th {
+            padding: 4px 6px;
+            text-align: center;
+        }
+
+        th {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Newton's Third Law: Action–Reaction & Momentum Transfer</h2>
+    <div id="lab">
+        <div id="ball1" class="ball">m=3</div>
+        <div id="ball2" class="ball">m=1</div>
+        <div id="arrow1" class="arrow left"></div>
+        <div id="arrow2" class="arrow"></div>
+    </div>
+
+    <div id="dataPanel">
+        <table>
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Position (px)</th>
+                    <th>Velocity</th>
+                    <th>Momentum (p)</th>
+                    <th>Kinetic Energy (KE)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Ball 1</td>
+                    <td id="p1">0</td>
+                    <td id="v1">0</td>
+                    <td id="mom1">0</td>
+                    <td id="ke1">0</td>
+                </tr>
+                <tr>
+                    <td>Ball 2</td>
+                    <td id="p2">0</td>
+                    <td id="v2">0</td>
+                    <td id="mom2">0</td>
+                    <td id="ke2">0</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script>
+        const lab = document.querySelector('#lab');
+        const ball1 = document.querySelector('#ball1');
+        const ball2 = document.querySelector('#ball2');
+        const arrow1 = document.querySelector('#arrow1');
+        const arrow2 = document.querySelector('#arrow2');
+
+        // Table cells
+        const p1El = document.querySelector('#p1');
+        const v1El = document.querySelector('#v1');
+        const mom1El = document.querySelector('#mom1');
+        const ke1El = document.querySelector('#ke1');
+
+        const p2El = document.querySelector('#p2');
+        const v2El = document.querySelector('#v2');
+        const mom2El = document.querySelector('#mom2');
+        const ke2El = document.querySelector('#ke2');
+
+        const labWidth = lab.offsetWidth;
+
+        // Physics setup
+        let m1 = 3, m2 = 1;
+        let x1 = 0, v1 = 3;
+        let x2 = labWidth - 80, v2 = -2;
+        const radius = 40;
+
+        function update() {
+            x1 += v1;
+            x2 += v2;
+
+            // Collision check
+            if (Math.abs((x1 + radius) - (x2 + radius)) < 2 * radius) {
+                // Elastic collision equations
+                const newV1 = ((m1 - m2) / (m1 + m2)) * v1 + (2 * m2 / (m1 + m2)) * v2;
+                const newV2 = (2 * m1 / (m1 + m2)) * v1 + ((m2 - m1) / (m1 + m2)) * v2;
+                v1 = newV1;
+                v2 = newV2;
+
+                // Show force arrows
+                arrow1.style.left = (labWidth / 2 - 100) + "px";
+                arrow2.style.left = (labWidth / 2 + 20) + "px";
+
+                anime({
+                    targets: [arrow1, arrow2],
+                    opacity: [0, 1],
+                    translateX: (el, i) => i === 0 ? -50 : 50,
+                    duration: 800,
+                    easing: 'easeOutBack',
+                    direction: 'alternate',
+                    loop: 2
+                });
+            }
+
+            // Boundaries
+            if (x1 <= 0 || x1 >= labWidth - 80) v1 *= -1;
+            if (x2 <= 0 || x2 >= labWidth - 80) v2 *= -1;
+
+            // Apply positions
+            ball1.style.left = x1 + "px";
+            ball2.style.left = x2 + "px";
+
+            // Update lab data
+            p1El.textContent = x1.toFixed(0);
+            v1El.textContent = v1.toFixed(2);
+            mom1El.textContent = (m1 * v1).toFixed(2);
+            ke1El.textContent = (0.5 * m1 * v1 * v1).toFixed(2);
+
+            p2El.textContent = x2.toFixed(0);
+            v2El.textContent = v2.toFixed(2);
+            mom2El.textContent = (m2 * v2).toFixed(2);
+            ke2El.textContent = (0.5 * m2 * v2 * v2).toFixed(2);
+
+            requestAnimationFrame(update);
+        }
+
+        update();
+    </script>
+</body>
+
+</html>
